@@ -1,12 +1,15 @@
 {
   "name": "@jmartsch/address-autocomplete",
   "author": "Jens Martsch",
-  "version": "0.0.9",
+  "version": "0.1.0",
   "license": "MIT",
   "module": "src/googleMapsAutocomplete.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/jmartsch/address-autocomplete.git"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "files": [
     "dist",
