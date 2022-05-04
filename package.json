@@ -1,0 +1,28 @@
+{
+  "name": "@jmartsch/address-autocomplete",
+  "author": "Jens Martsch",
+  "version": "0.0.9",
+  "license": "MIT",
+  "repository": "jmartsch/address-autocomplete",
+  "release-it": {
+    "github": {
+      "release": true
+    }
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^2.9.5"
+  },
+  "dependencies": {
+    "@googlemaps/js-api-loader": "^1.14.1",
+    "@rollup/plugin-node-resolve": "^13.2.1",
+    "@rollup/plugin-strip": "^2.1.0",
+    "sweetalert2": "^11.4.9",
+    "vite-plugin-live-reload": "^2.1.0",
+    "vite-plugin-restart": "^0.1.1"
+  }
+}

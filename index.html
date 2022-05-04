@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vite App</title>
+</head>
+
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>Address autocomplete</h1>
+    </header>
+    <form class="body" id="form">
+      <div class="autocomplete debounced">
+        <label>Straße
+          <input class="autocomplete-input" name="strasse" id="strasse" value="Albert">
+        </label>
+        <ul class="autocomplete-result-list"></ul>
+      </div>
+
+
+
+      <div class="group">
+        <label >Hausnummer
+          <input type="text" name="hausnr" id="hausnr">
+        </label>
+      </div>
+      <div class="group">
+        <label>PLZ
+          <input type="text" name="plz" id="plz" value="481">
+        </label>
+      </div>
+      <div class="group ort">
+        <label>Ort
+          <input type="text" name="ort" class="autocomplete-input" id="ort" value="Münste">
+        </label>
+          <ul class="autocomplete-result-list"></ul>
+      </div>
+      <div class="selection"></div>
+        <button type="submit">Abschicken</button>
+    </form>
+  </div>
+<div id="results"></div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+
+</html>
