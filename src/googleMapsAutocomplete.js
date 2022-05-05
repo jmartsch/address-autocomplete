@@ -220,29 +220,26 @@ export default class AddAddressAutoComplete {
     }
   }
 
-  checkAddressOnSubmit = function (e) {
-    console.log(e);
+  submitForm() {
+    console.log('submitForm');
+    this.form.submit();
+  }
+
+  checkAddressOnSubmit = function (event) {
+    console.log(event);
     console.log(this);
-    let autocompleteClass = e.target.autocompleteClass;
-    e.preventDefault();
+    let autocompleteClass = event.target.autocompleteClass;
+    event.preventDefault();
     let route = autocompleteClass.getFieldForComponent('route').element.value;
     let street_number = autocompleteClass.getFieldForComponent('street_number').element.value;
     let postal_code = autocompleteClass.getFieldForComponent('postal_code').element.value;
     let locality = autocompleteClass.getFieldForComponent('locality').element.value;
     let queryString = `${route} ${street_number}, ${postal_code} ${locality}`;
     console.log(queryString);
-    // service = new google.maps.places.PlacesService(map);
-    // service.findPlaceFromQuery(request, (results, status) => {
-    //     if (status === google.maps.places.PlacesServiceStatus.OK && results) {
-    //         for (let i = 0; i < results.length; i++) {
-    //             createMarker(results[i]);
-    //         }
-    //
-    //         map.setCenter(results[0].geometry.location);
-    //     }
-    // });
+
 
     let service = new google.maps.places.AutocompleteService();
+    console.log(service);
     service.getPlacePredictions({
         input: queryString,
         types: ['address'],
@@ -250,54 +247,67 @@ export default class AddAddressAutoComplete {
         componentRestrictions: {country: 'de'}
       },
       function (predictions, status) {
-        if (status == google.maps.places.PlacesServiceStatus.OK) {
-          // let results = document.getElementById('results');
-          // results.innerHTML = '';
-          // show all predictions
-          // console.log(predictions);
-          // for (let i = 0, prediction; prediction = predictions[i]; i++) {
-          //     results.innerHTML += '<li>' + prediction.description + '</li>';
-          // }
-
+        console.log(predictions);
+        console.log(status);
+        if (status === 'ZERO_RESULTS') {
+          autocompleteClass.submitForm();
+        }
+        if (status === 'OK') {
           let map = new google.maps.Map(document.createElement('div'));
           let placesService = new google.maps.places.PlacesService(map);
+          console.log(placesService);
           let suggestedPlace = '';
           // predictions.forEach(function(prediction) {
           placesService.getDetails({placeId: predictions[0].place_id}, (place, status) => {
+            console.log(status);
+            console.log(place);
             if (status !== 'OK') {
-              // alert(status);
-              console.log(status);
-              return;
+              autocompleteClass.submitForm();
             }
-            suggestedPlace = place;
-            if (autocompleteClass.checkIfFieldValueIsDifferent(suggestedPlace)) {
-              // if values of the suggested place differ from the values in the inputs, then show a modal to correct the address
-              Toast.fire({
-                icon: 'question',
-                title: 'Die eingegebene Adresse konnte nicht gefunden werden.',
-                html: `Meinten Sie vielleicht ${place.formatted_address} ?`,
-                // footer: 'Möchten Sie stattdessen die vorgeschlagene Adresse einfügen.',
-                showConfirmButton: true,
-                showCancelButton: true,
-                confirmButtonText: 'Vorgeschlagene Adresse übernehmen',
-                cancelButtonText: 'Eingegebene Daten behalten',
-              }).then(function (e) {
-                console.log(e);
-                console.log(suggestedPlace);
-                if (e.isConfirmed) {
-                  autocompleteClass.fillInAddress(suggestedPlace);
-                  autocompleteClass.form.submit();
-                  // autocompleteForm.removeEventListener('submit', autocompleteClass.checkAddressOnSubmit)
-                }
-                // if (e.isDismissed || e.isDenied){
-                //   autocompleteForm.removeEventListener('submit', autocompleteClass.checkAddressOnSubmit)
-                // }
-              }).catch(Toast.noop);
-
+            if (status === 'OK') {
+              autocompleteClass.suggestAddress(place);
             }
+            // suggestedPlace = place;
+            // return place;
           });
         }
       });
+
+  }
+
+  suggestAddress = function (suggestedPlace) {
+    console.log('suggestAddress');
+    console.log(this);
+    let autocompleteClass = this;
+    if (this.checkIfFieldValueIsDifferent(suggestedPlace)) {
+      // if values of the suggested place differ from the values in the inputs, then show a modal to correct the address
+      Toast.fire({
+        icon: 'question',
+        title: 'Die eingegebene Adresse konnte nicht gefunden werden.',
+        html: `Meinten Sie vielleicht ${suggestedPlace.formatted_address} ?`,
+        // footer: 'Möchten Sie stattdessen die vorgeschlagene Adresse einfügen.',
+        showConfirmButton: true,
+        showCancelButton: true,
+        confirmButtonText: 'Vorgeschlagene Adresse übernehmen',
+        cancelButtonText: 'Eingegebene Daten behalten',
+      }).then(function (e) {
+        console.log(e);
+        console.log(suggestedPlace);
+        if (e.isConfirmed) {
+          autocompleteClass.fillInAddress(suggestedPlace);
+          // autocompleteClass.form.submit();
+          // autocompleteForm.removeEventListener('submit', autocompleteClass.checkAddressOnSubmit)
+          autocompleteClass.submitForm();
+        }
+
+        // if (e.isDismissed || e.isDenied) {
+        //   autocompleteClass.form.removeEventListener('submit', autocompleteClass.checkAddressOnSubmit)
+        // }
+      }).catch(Toast.noop);
+
+    } else {
+      this.submitForm();
+    }
   }
 
   getFieldForComponent(componentType) {
