@@ -45,6 +45,7 @@ export default class AddAddressAutoComplete {
   constructor(form, fields) {
     this.autocompletes = [];
     this.addressData = {};
+    this.isDirty = true;
     this.form = form;
     this.form.autocompleteClass = this;
     this.fields = fields;
@@ -54,6 +55,7 @@ export default class AddAddressAutoComplete {
       this.setupFormFields();
       this.addAutocompleteToFields();
       this.form.addEventListener('submit', this.checkAddressOnSubmit)
+
 
       console.log('Form setup sucessful for #' + this.form.id);
     }
@@ -184,59 +186,84 @@ export default class AddAddressAutoComplete {
       // @ts-ignore remove once typings fixed
       const componentType = component.types[0];
       let field = instance.getFieldForComponent(componentType);
-      if (field) {
-        switch (componentType) {
-          case "street_number": {
-            field.element.value = `${component.long_name}`;
-            break;
-          }
+      instance.setFieldValueToSuggested(componentType, field, component);
+    }
+  }
 
-          case "route": {
-            field.element.value = component.long_name;
-            break;
-          }
-
-          case "postal_code": {
-            field.element.value = `${component.long_name}`;
-            break;
-          }
-
-          case "postal_code_suffix": {
-            field.element.value = `${component.long_name}`;
-            break;
-          }
-          case "locality":
-            field.element.value = component.long_name;
-            break;
-          case "administrative_area_level_1": {
-            field.element.value = component.long_name;
-            break;
-          }
-          case "country":
-            field.element.value = component.long_name;
-            break;
-        }
+  setFieldValueToSuggested(componentType, field, component) {
+    if (!field) {
+      return;
+    }
+    switch (componentType) {
+      case "street_number": {
+        field.element.value = `${component.long_name}`;
+        this.isDirty = false;
+        break;
       }
+
+      case "route": {
+        field.element.value = component.long_name;
+        this.isDirty = false;
+
+        break;
+      }
+
+      case "postal_code": {
+        field.element.value = `${component.long_name}`;
+        this.isDirty = false;
+
+        break;
+      }
+
+      case "postal_code_suffix": {
+        field.element.value = `${component.long_name}`;
+        this.isDirty = false;
+
+        break;
+      }
+      case "locality":
+        field.element.value = component.long_name;
+        this.isDirty = false;
+
+        break;
+      case "administrative_area_level_1": {
+        field.element.value = component.long_name;
+        this.isDirty = false;
+
+        break;
+      }
+      case "country":
+        field.element.value = component.long_name;
+        this.isDirty = false;
+
+        break;
     }
   }
 
   submitForm() {
     console.log('submitForm');
-    this.form.submit();
+    if (this.isDirty === false) {
+      this.form.submit();
+    }
   }
 
   checkAddressOnSubmit = function (event) {
     console.log(event);
-    console.log(this);
-    let autocompleteClass = event.target.autocompleteClass;
     event.preventDefault();
+
+    let autocompleteClass = event.target.autocompleteClass;
+    console.log(autocompleteClass.isDirty, 'isDirty');
+    // if (autocompleteClass.isDirty === false) {
+    //   console.log('form abschicken, weil dirty');
+    //   autocompleteClass.submitForm();
+    // }
+    console.log('Vorschlag machen weil dirty');
     let route = autocompleteClass.getFieldForComponent('route').element.value;
     let street_number = autocompleteClass.getFieldForComponent('street_number').element.value;
     let postal_code = autocompleteClass.getFieldForComponent('postal_code').element.value;
     let locality = autocompleteClass.getFieldForComponent('locality').element.value;
     let queryString = `${route} ${street_number}, ${postal_code} ${locality}`;
     console.log(queryString);
-
 
     let service = new google.maps.places.AutocompleteService();
     console.log(service);
@@ -261,9 +288,9 @@ export default class AddAddressAutoComplete {
           placesService.getDetails({placeId: predictions[0].place_id}, (place, status) => {
             console.log(status);
             console.log(place);
-            if (status !== 'OK') {
-              autocompleteClass.submitForm();
-            }
+            // if (status !== 'OK') {
+              // autocompleteClass.submitForm();
+            // }
             if (status === 'OK') {
               autocompleteClass.suggestAddress(place);
             }
@@ -275,6 +302,11 @@ export default class AddAddressAutoComplete {
 
   }
 
+  // on change event of an input set this.isDirty to true
+  setDirty = function (event) {
+    console.log('setDirty weil Feld geändert wurde' + event.target.name);
+    this.isDirty = true;
+  }
   suggestAddress = function (suggestedPlace) {
     console.log('suggestAddress');
     console.log(this);
@@ -297,12 +329,14 @@ export default class AddAddressAutoComplete {
           autocompleteClass.fillInAddress(suggestedPlace);
           // autocompleteClass.form.submit();
           // autocompleteForm.removeEventListener('submit', autocompleteClass.checkAddressOnSubmit)
+          console.log(autocompleteClass.isDirty, 'isDirty?');
           autocompleteClass.submitForm();
         }
 
-        // if (e.isDismissed || e.isDenied) {
-        //   autocompleteClass.form.removeEventListener('submit', autocompleteClass.checkAddressOnSubmit)
-        // }
+        if (e.isDismissed || e.isDenied) {
+          autocompleteClass.isDirty = false;
+          autocompleteClass.submitForm();
+        }
       }).catch(Toast.noop);
 
     } else {
@@ -367,6 +401,7 @@ export default class AddAddressAutoComplete {
       let fieldElement = this.form.querySelector('[name="' + fieldName + '"]');
 
       if (fieldElement != null) {
+        fieldElement.addEventListener('change', this.setDirty);
         field.element = fieldElement;
         console.log('added domElement for field: ' + fieldName);
       }
