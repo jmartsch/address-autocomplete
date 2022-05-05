@@ -277,6 +277,7 @@ export default class AddAddressAutoComplete {
         console.log(predictions);
         console.log(status);
         if (status === 'ZERO_RESULTS') {
+          this.isDirty = false;
           autocompleteClass.submitForm();
         }
         if (status === 'OK') {
@@ -289,7 +290,7 @@ export default class AddAddressAutoComplete {
             console.log(status);
             console.log(place);
             // if (status !== 'OK') {
-              // autocompleteClass.submitForm();
+            // autocompleteClass.submitForm();
             // }
             if (status === 'OK') {
               autocompleteClass.suggestAddress(place);
@@ -340,6 +341,7 @@ export default class AddAddressAutoComplete {
       }).catch(Toast.noop);
 
     } else {
+      this.isDirty = false;
       this.submitForm();
     }
   }
