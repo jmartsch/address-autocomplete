@@ -173,11 +173,9 @@ export default class AddAddressAutoComplete {
     // Get the place details from the autocomplete object.
     console.log('fillInAddress');
     place = place ? place : this.getPlace();
-
     console.log(place);
     let instance = this.classReference ? this.classReference : this;
     // instance.place = place;
-    console.log(instance);
     // Get each component of the address from the place details,
     // and then fill-in the corresponding field on the form.
     // place.address_components are google.maps.GeocoderAddressComponent objects
@@ -242,9 +240,10 @@ export default class AddAddressAutoComplete {
 
   submitForm() {
     console.log('submitForm');
-    if (this.isDirty === false) {
-      this.form.submit();
-    }
+    console.log(this.isDirty, "isDirty");
+    // if (this.isDirty === false) {
+    //   this.form.submit();
+    // }
   }
 
   checkAddressOnSubmit = function (event) {
@@ -266,7 +265,6 @@ export default class AddAddressAutoComplete {
     console.log(queryString);
 
     let service = new google.maps.places.AutocompleteService();
-    console.log(service);
     service.getPlacePredictions({
         input: queryString,
         types: ['address'],
@@ -277,22 +275,27 @@ export default class AddAddressAutoComplete {
         console.log(predictions);
         console.log(status);
         if (status === 'ZERO_RESULTS') {
+          console.log('zero results from getPlacePredictions');
           this.isDirty = false;
           autocompleteClass.submitForm();
         }
         if (status === 'OK') {
           let map = new google.maps.Map(document.createElement('div'));
           let placesService = new google.maps.places.PlacesService(map);
-          console.log(placesService);
+          console.log('got results from getPlacePredictions');
           let suggestedPlace = '';
           // predictions.forEach(function(prediction) {
           placesService.getDetails({placeId: predictions[0].place_id}, (place, status) => {
-            console.log(status);
-            console.log(place);
-            // if (status !== 'OK') {
+            console.log("status from placesService.getDetails: "  + status);
+            if (status !== 'OK') {
+              console.log('status is not OK. what to do now?');
+              this.isDirty = false;
+              autocompleteClass.submitForm();
             // autocompleteClass.submitForm();
-            // }
+            }
             if (status === 'OK') {
+              console.log('placesService found a place');
+              console.log(place);
               autocompleteClass.suggestAddress(place);
             }
             // suggestedPlace = place;
@@ -328,8 +331,6 @@ export default class AddAddressAutoComplete {
         console.log(suggestedPlace);
         if (e.isConfirmed) {
           autocompleteClass.fillInAddress(suggestedPlace);
-          // autocompleteClass.form.submit();
-          // autocompleteForm.removeEventListener('submit', autocompleteClass.checkAddressOnSubmit)
           console.log(autocompleteClass.isDirty, 'isDirty?');
           autocompleteClass.submitForm();
         }
