@@ -239,11 +239,10 @@ export default class AddAddressAutoComplete {
   }
 
   submitForm() {
-    console.log('submitForm');
-    console.log(this.isDirty, "isDirty");
-    // if (this.isDirty === false) {
-    //   this.form.submit();
-    // }
+    console.log('submitForm (depending on isDirty)?', this.isDirty);
+    if (this.isDirty === false) {
+      this.form.submit();
+    }
   }
 
   checkAddressOnSubmit = function (event) {
