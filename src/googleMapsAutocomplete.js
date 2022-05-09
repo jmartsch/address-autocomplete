@@ -35,10 +35,26 @@ console.log('google.js loaded');
 
 let Toast = Swal.mixin({
   backdrop: true,
-  allowOutsideClick: false,
-  allowEscapeKey: false,
-  showCancelButton: false,
+  allowOutsideClick: true,
+  allowEscapeKey: true,
+  showCancelButton: true,
+  showDenyButton: true,
 })
+
+// Toast.fire({
+//   icon: 'question',
+//   title: `Die Adresse scheint es nicht zu geben.`,
+//   html: `Meinten Sie vielleicht ${suggestedPlace.formatted_address} ?`,
+//   // footer: 'Möchten Sie stattdessen die vorgeschlagene Adresse einfügen.',
+//   showConfirmButton: true,
+//   showCancelButton: true,
+//   confirmButtonColor : 'green',
+//   denyButtonColor : '#57504d',
+//   cancelButtonColor : '#727272',
+//   confirmButtonText: 'Ja',
+//   cancelButtonText: 'Ich möchte die Adresse korrigieren',
+//   denyButtonText:   'Nein, die Adresse ist korrekt',
+// })
 
 export default class AddAddressAutoComplete {
   // simple example can be found at https://developers.google.com/maps/documentation/javascript/examples/places-autocomplete-addressform
@@ -318,13 +334,17 @@ export default class AddAddressAutoComplete {
       // if values of the suggested place differ from the values in the inputs, then show a modal to correct the address
       Toast.fire({
         icon: 'question',
-        title: 'Die eingegebene Adresse konnte nicht gefunden werden.',
-        html: `Meinten Sie vielleicht ${suggestedPlace.formatted_address} ?`,
+        title: `Die Adresse scheint es nicht zu geben.`,
+        // html: `Ändern zu ${suggestedPlace.formatted_address} ?`,
         // footer: 'Möchten Sie stattdessen die vorgeschlagene Adresse einfügen.',
         showConfirmButton: true,
         showCancelButton: true,
-        confirmButtonText: 'Vorgeschlagene Adresse übernehmen',
-        cancelButtonText: 'Eingegebene Daten behalten',
+        confirmButtonColor : 'green',
+        denyButtonColor : '#57504d',
+        cancelButtonColor : '#727272',
+        confirmButtonText: `Ändern zu ${suggestedPlace.formatted_address} ?`,
+        cancelButtonText: 'Ich möchte die Adresse noch korrigieren',
+        denyButtonText:   'Nein, die eingegebene Adresse ist korrekt',
       }).then(function (e) {
         console.log(e);
         console.log(suggestedPlace);
@@ -334,7 +354,7 @@ export default class AddAddressAutoComplete {
           autocompleteClass.submitForm();
         }
 
-        if (e.isDismissed || e.isDenied) {
+        if (e.isDenied) {
           autocompleteClass.isDirty = false;
           autocompleteClass.submitForm();
         }
